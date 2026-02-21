@@ -129,9 +129,20 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The predicted labels (y_pred) for given X.
         """
-        pass
+        
+        # confirm that X has the proper number of features (including the bias term)
+        if X.shape[1] != self.num_feats + 1:
+            raise ValueError(f"X must have {self.num_feats + 1} features (including bias term).")
+
+        # apply weights to the input feature values using matrix multiplication)
+        y_pred = X @ self.W
+
+        # apply the logistic function to convert y_pred to probabilites between 0 and 1
+        y_pred = 1 / (1 + np.exp(-y_pred))
+
+        return y_pred
     
-    def loss_function(self, y_true, y_pred) -> float:
+    def loss_function(self, y_true, y_pred, eps = 1e-15) -> float:
         """
         TODO: Implement binary cross entropy loss, which assumes that the true labels are either
         0 or 1. (This can be extended to more than two classes, but here we have just two.)
@@ -143,7 +154,17 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             The mean loss (a single number).
         """
-        pass
+        
+        # confirm that y_true and y_pred are the same shape, if not throw an error
+        if y_true.shape != y_pred.shape:
+            raise ValueError("y_true and y_pred must be the same shape.")
+
+        # compute the binary cross entropy for each data point (add a very small constant, eps, to avoid log(0))
+        y_pred = np.clip(y_pred, eps, 1 - eps)  # clip y_pred to avoid log(0)
+        bce = -(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        
+        # return the negative mean of the bce across all data points
+        return np.mean(bce)
         
     def calculate_gradient(self, y_true, X) -> np.ndarray:
         """
@@ -157,4 +178,18 @@ class LogisticRegressor(BaseRegressor):
         Returns: 
             Vector of gradients.
         """
-        pass
+        
+        # confirm that X has the proper number of features (including the bias term)
+        if X.shape[1] != self.num_feats + 1:
+            raise ValueError(f"X must have {self.num_feats + 1} features (including bias term).")
+        
+        # confirm that y_true and X are compatible
+        if y_true.shape[0] != X.shape[0]:
+            raise ValueError("y_true and X must have the same number of rows.")
+
+        # compute the gradient of the loss function with respect to W
+        y_pred = self.make_prediction(X)
+        grads = (y_pred - y_true) / (y_pred * (1 - y_pred))
+        
+        # return a vector of gradients (same shape as W; to be used for updating W during training)
+        return grads
