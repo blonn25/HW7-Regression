@@ -135,7 +135,7 @@ class LogisticRegressor(BaseRegressor):
             raise ValueError(f"X must have {self.num_feats + 1} features (including bias term).")
 
         # apply weights to the input feature values using matrix multiplication)
-        y_pred = X @ self.W
+        y_pred = np.dot(X, self.W)
 
         # apply the logistic function to convert y_pred to probabilites between 0 and 1
         y_pred = 1 / (1 + np.exp(-y_pred))
@@ -189,7 +189,7 @@ class LogisticRegressor(BaseRegressor):
 
         # compute the gradient of the loss function with respect to W
         y_pred = self.make_prediction(X)
-        grads = (y_pred - y_true) / (y_pred * (1 - y_pred))
-        
+        grads = (X.T @ (y_pred - y_true)) / X.shape[0]
+
         # return a vector of gradients (same shape as W; to be used for updating W during training)
         return grads
