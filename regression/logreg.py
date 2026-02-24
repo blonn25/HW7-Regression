@@ -58,16 +58,19 @@ class BaseRegressor():
             update_sizes = []
 
             # Iterate through batches (one of these loops is one epoch of training)
-            for X_train, y_train in zip(X_batch, y_batch):
+            for X_batch_train, y_batch_train in zip(X_batch, y_batch):
 
                 # Make prediction and calculate loss
-                y_pred = self.make_prediction(X_train)
-                train_loss = self.loss_function(y_train, y_pred)
+                # y_pred = self.make_prediction(X_train)
+                # train_loss = self.loss_function(y_train, y_pred)
+                y_pred = self.make_prediction(X_batch_train)
+                train_loss = self.loss_function(y_batch_train, y_pred)
                 self.loss_hist_train.append(train_loss)
 
                 # Update weights
                 prev_W = self.W
-                grad = self.calculate_gradient(y_train, X_train)
+                # grad = self.calculate_gradient(y_train, X_train)
+                grad = self.calculate_gradient(y_batch_train, X_batch_train)
                 new_W = prev_W - self.lr * grad 
                 self.W = new_W
 

@@ -12,10 +12,13 @@ This is not an exhaustive list.
 import pytest
 # (you will probably need to import more things here)
 import numpy as np
-from regression import LogisticRegressor
+from regression import (logreg, utils)
 
 def test_prediction():
-	model = LogisticRegressor(num_feats=2)
+	"""
+	Check that prediction is working as expected
+	"""
+	model = logreg.LogisticRegressor(num_feats=2)
 	model.W = np.array([1.0, -1.0, 0.5])
 
 	X = np.array([
@@ -32,7 +35,10 @@ def test_prediction():
 	assert np.allclose(y_pred, expected)
 
 def test_loss_function():
-	model = LogisticRegressor(num_feats=2)
+	"""
+	Check that loss function is working as expected
+	"""
+	model = logreg.LogisticRegressor(num_feats=2)
 	y_true = np.array([1.0, 0.0])
 	y_pred = np.array([0.9, 0.2])
 
@@ -42,7 +48,10 @@ def test_loss_function():
 	assert loss == pytest.approx(expected)
 
 def test_gradient():
-	model = LogisticRegressor(num_feats=2)
+	"""
+	Check that gradient is working as expected
+	"""
+	model = logreg.LogisticRegressor(num_feats=2)
 	model.W = np.array([0.2, -0.1, 0.3])
 
 	X = np.array([
@@ -60,7 +69,10 @@ def test_gradient():
 	assert np.allclose(grad, expected)
 
 def test_training():
-	model = LogisticRegressor(num_feats=2, learning_rate=0.1, max_iter=20, batch_size=2)
+	"""
+	Check that training is working as expected
+	"""
+	model = logreg.LogisticRegressor(num_feats=2, learning_rate=0.1, max_iter=20, batch_size=2)
 
 	X_train = np.array([
 		[0.0, 0.0],
