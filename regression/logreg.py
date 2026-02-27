@@ -135,7 +135,7 @@ class LogisticRegressor(BaseRegressor):
         
         # confirm that X has the proper number of features (including the bias term)
         if X.shape[1] != self.num_feats + 1:
-            raise ValueError(f"X must have {self.num_feats + 1} features (including bias term).")
+            raise ValueError(f"X must have {self.num_feats + 1} features including bias term.")
 
         # apply weights to the input feature values using matrix multiplication)
         y_pred = np.dot(X, self.W)
@@ -184,7 +184,7 @@ class LogisticRegressor(BaseRegressor):
         
         # confirm that X has the proper number of features (including the bias term)
         if X.shape[1] != self.num_feats + 1:
-            raise ValueError(f"X must have {self.num_feats + 1} features (including bias term).")
+            raise ValueError(f"X must have {self.num_feats + 1} features including bias term.")
         
         # confirm that y_true and X are compatible
         if y_true.shape[0] != X.shape[0]:
