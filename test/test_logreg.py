@@ -9,8 +9,6 @@ This is not an exhaustive list.
 """
 
 # Imports
-from xml.parsers.expat import model
-
 import pytest
 # (you will probably need to import more things here)
 import numpy as np
