@@ -9,10 +9,35 @@ This is not an exhaustive list.
 """
 
 # Imports
+from xml.parsers.expat import model
+
 import pytest
 # (you will probably need to import more things here)
 import numpy as np
 from regression import (logreg, utils)
+from sklearn.preprocessing import StandardScaler
+
+def get_nsclc_data():
+	"""
+	Helper function to load and preprocess data for testing
+	"""
+	# Load and scale data
+	X_train, X_val, y_train, y_val = utils.loadDataset(
+        features=[
+            'Penicillin V Potassium 500 MG',
+            'Computed tomography of chest and abdomen',
+            'Plain chest X-ray (procedure)',
+            'Low Density Lipoprotein Cholesterol',
+            'Creatinine',
+            'AGE_DIAGNOSIS'
+        ],
+        split_percent=0.8,
+        split_seed=42
+    )
+	sc = StandardScaler()
+	X_train = sc.fit_transform(X_train)
+	X_val = sc.transform(X_val)
+	return X_train, X_val, y_train, y_val
 
 def test_prediction():
 	"""
@@ -39,6 +64,18 @@ def test_prediction():
 	assert np.all((y_pred >= 0) & (y_pred <= 1))
 	assert np.allclose(y_pred, expected)
 
+def test_prediction_real():
+	"""
+	Check that prediction is working as expected with real data
+	"""
+	X_train, _, _, _ = get_nsclc_data()
+	model = logreg.LogisticRegressor(num_feats=X_train.shape[1] - 1)	# init model
+	y_pred = model.make_prediction(X_train)								# make predictions
+
+	# assert that predictions have the correct shape and are between 0 and 1
+	assert y_pred.shape == (X_train.shape[0],)
+	assert np.all((y_pred >= 0) & (y_pred <= 1))
+
 def test_loss_function():
 	"""
 	Check that loss function is working as expected
@@ -57,6 +94,19 @@ def test_loss_function():
 
 	# assert that the calculated loss is approximately equal to the expected loss
 	assert loss == pytest.approx(expected)
+
+def test_loss_function_real():
+	"""
+	Check that loss function is working as expected with real data
+	"""
+	X_train, _, y_train, _ = get_nsclc_data()
+	model = logreg.LogisticRegressor(num_feats=X_train.shape[1] - 1)	# init model
+	y_pred = model.make_prediction(X_train)								# make predictions
+	loss = model.loss_function(y_train, y_pred)							# compute loss
+
+	# assert that loss is a single number and is non-negative
+	assert isinstance(loss, float)
+	assert loss >= 0
 
 def test_gradient():
 	"""
@@ -81,6 +131,20 @@ def test_gradient():
 	expected = (X.T @ (y_pred - y_true)) / len(y_true)
 
 	# assert that the calculated gradient has the same shape as the weights and is equal to the expected gradient
+	assert grad.shape == model.W.shape
+	assert np.allclose(grad, expected)
+
+def test_gradient_real():
+	"""
+	Check that gradient is working as expected with real data
+	"""
+	X_train, _, y_train, _ = get_nsclc_data()
+	model = logreg.LogisticRegressor(num_feats=X_train.shape[1] - 1)	# init model
+	grad = model.calculate_gradient(y_train, X_train)					# calculate gradient
+	y_pred = model.make_prediction(X_train)								# make predictions
+	expected = (X_train.T @ (y_pred - y_train)) / len(y_train)			# manually calculate expected gradient
+
+	# assert that gradient is a vector with the same number of elements as the weights
 	assert grad.shape == model.W.shape
 	assert np.allclose(grad, expected)
 
@@ -111,6 +175,20 @@ def test_training():
 	model.train_model(X_train, y_train, X_val, y_val)
 
 	# assert that the weights have been updated and that the loss history lists are not empty
+	assert not np.allclose(initial_weights, model.W)
+	assert len(model.loss_hist_train) > 0
+	assert len(model.loss_hist_val) > 0
+
+def test_training_real():
+	"""
+	Check that training is working as expected with real data
+	"""
+	X_train, X_val, y_train, y_val = get_nsclc_data()
+	model = logreg.LogisticRegressor(num_feats=X_train.shape[1])		# init model
+	initial_weights = model.W.copy()									# store initial weights
+	model.train_model(X_train, y_train, X_val, y_val)					# train the model
+
+	# assert that gradient is a vector with the same number of elements as the weights
 	assert not np.allclose(initial_weights, model.W)
 	assert len(model.loss_hist_train) > 0
 	assert len(model.loss_hist_val) > 0
